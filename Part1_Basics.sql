@@ -1,4 +1,5 @@
-/* SELECT --> chooses columns to output
+/*
+SELECT --> chooses columns to output
 FROM --> chooses the table where selected columns come from
 WHERE --> filters the base data
 ORDER BY --> chooses what column the output will be ordered by
