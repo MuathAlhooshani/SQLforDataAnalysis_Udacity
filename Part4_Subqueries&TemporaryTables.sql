@@ -71,3 +71,61 @@ JOIN (SELECT s.name rep_name, r.name region_name, SUM(o.total_amt_usd) total_amt
      GROUP BY 1,2
      ORDER BY 3 DESC) t3
 ON t3.region_name = t2.region_name AND t3.total_amt = t2.total_amt;
+
+
+/*How many accounts had more total purchases than
+the account name which has bought the most standard_qty paper throughout their lifetime as a customer?*/
+/*first account name most standard_qty paper*/
+SELECT A.name AS account, SUM(O.standard_qty) AS total_standard
+FROM orders AS O
+JOIN accounts AS A
+ON A.id=O.account_id
+GROUP BY 1
+ORDER BY 2 DESC;
+
+SELECT account AS most_StdQty_account
+FROM (SELECT A.name AS account, SUM(O.standard_qty) AS total_standard
+      FROM orders AS O
+      JOIN accounts AS A
+      ON A.id=O.account_id
+      GROUP BY 1
+      ORDER BY 2 DESC
+      LIMIT 1;) t1
+/*How many accounts had more total purchases than the account derived from the query above*/
+SELECT A.name AS name, SUM(O.total) AS total_purchased
+FROM orders AS O
+JOIN accounts AS A
+ON A.id=O.account_id
+GROUP BY 1
+HAVING SUM(O.total) > (SELECT total_standard FROM
+  (SELECT A.name AS account, SUM(O.standard_qty) AS total_standard
+      FROM orders AS O
+      JOIN accounts AS A
+      ON A.id=O.account_id
+      GROUP BY 1
+      ORDER BY 2 DESC
+      LIMIT 1) t1)
+
+
+/*What is the lifetime average amount spent in terms of total_amt_usd,
+including only the companies that spent more per order, on average, than the average of all orders.*/
+/*first, overall average.*/
+SELECT AVG(O.total_amt_usd) overall_avg
+FROM orders AS O
+/*companies that spent more per order, on average, than the average of all orders*/
+SELECT A.name AS account, AVG(O.total_amt_usd) Average_spent
+FROM orders AS O
+JOIN accounts AS A
+ON A.id=O.account_id
+GROUP BY 1
+HAVING AVG(O.total_amt_usd) > (SELECT AVG(O.total_amt_usd) overall_avg
+                               FROM orders AS O)
+/*finally the average of the above averages*/
+SELECT AVG(Average_spent) AS THE_avg
+FROM (SELECT A.name AS account, AVG(O.total_amt_usd) Average_spent
+      FROM orders AS O
+      JOIN accounts AS A
+      ON A.id=O.account_id
+      GROUP BY 1
+      HAVING AVG(O.total_amt_usd) > (SELECT AVG(O.total_amt_usd) overall_avg
+                                     FROM orders AS O)) t1
