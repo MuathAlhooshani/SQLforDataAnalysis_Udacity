@@ -129,3 +129,67 @@ FROM (SELECT A.name AS account, AVG(O.total_amt_usd) Average_spent
       GROUP BY 1
       HAVING AVG(O.total_amt_usd) > (SELECT AVG(O.total_amt_usd) overall_avg
                                      FROM orders AS O)) t1
+
+/*
+WITH STATEMENT:-
+on of the problems with subqueries is that it makes the query difficult to read.
+Moreover, if the inner query takes a significant amount of time, then experimenting with the outer query will be tedious
+
+Therefore, we ameliorate this by using the WITH statement which is often called a Common Table Expression or CTE.
+example given below:-
+*/
+/* Question: You need to find the average number of events for each channel per day.
+
+SOLUTION:*/
+
+SELECT channel, AVG(events) AS average_events
+FROM (SELECT DATE_TRUNC('day',occurred_at) AS day,
+             channel, COUNT(*) as events
+      FROM web_events
+      GROUP BY 1,2) sub
+GROUP BY channel
+ORDER BY 2 DESC;
+/*Let's try this again using a WITH statement.
+Notice, you can pull the inner query:*/
+
+SELECT DATE_TRUNC('day',occurred_at) AS day,
+       channel, COUNT(*) as events
+FROM web_events
+GROUP BY 1,2
+
+/*This is the part we put in the WITH statement. Notice, we are aliasing the table as events below:*/
+
+WITH events AS (
+          SELECT DATE_TRUNC('day',occurred_at) AS day,
+                        channel, COUNT(*) as events
+          FROM web_events
+          GROUP BY 1,2)
+
+/*Now, we can use this newly created events table as if it is any other table in our database:*/
+
+WITH events AS (
+          SELECT DATE_TRUNC('day',occurred_at) AS day,
+                        channel, COUNT(*) as events
+          FROM web_events
+          GROUP BY 1,2)
+
+SELECT channel, AVG(events) AS average_events
+FROM events
+GROUP BY channel
+ORDER BY 2 DESC;
+
+/*For the above example, we don't need anymore than the one additional table,
+but imagine we needed to create a second table to pull from. We can create an additional table to pull from in the following way:*/
+
+WITH table1 AS (
+          SELECT *
+          FROM web_events), /*comma*/
+
+     table2 AS (
+          SELECT *
+          FROM accounts)
+
+SELECT *
+FROM table1
+JOIN table2
+ON table1.account_id = table2.id;
