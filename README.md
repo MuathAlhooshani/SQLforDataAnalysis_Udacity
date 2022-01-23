@@ -11,4 +11,4 @@ Part3_Aggregations: goes over how aggregations work in SQL with the GROUP BY and
 Part4_Subqueries: this part is about utilizing nested queries, subqueries and CTE's to reach answers to more complex questions efficiently.
 
 ### Capstone project
-The project mainly consists of writing four queries for four given questions and submitting the findings in a report along with some data visualization.     
+The Sakila Database holds information about a company that rents movie DVDs. In this project, I investigate the database for interesting patterns and run SQL queries and answerer questions about the database as well as build visualizations to showcase the output of the aforementioned queries.     
